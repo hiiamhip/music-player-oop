@@ -408,10 +408,8 @@
                 Player.start();
                 Playlist.start();
             });
-            document.addEventListener("DOMContentLoaded", () => {
-                EventsHub.execute("DOMContentLoaded");
-            })
-            
+            EventsHub.bindEvent(document, "DOMContentLoaded", "DOMContentLoaded")
+
         </script>
     </body>
 </html>
