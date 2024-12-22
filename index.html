@@ -196,13 +196,15 @@
             const EventsHub = {
                 listeners: {},
                 register: function(event, callback) {
-                    if (!this.listeners[event]) {
-                        this.listeners[event] = [];
-                    }
-                    this.listeners[event].push(callback);
+                    // if (!this.listeners[event]) {
+                    //     this.listeners[event] = [];
+                    // }
+                    // this.listeners[event].push(callback);
+                    this.listeners[event] = callback;
                 },
                 execute: function(event, ...arg) {
-                    this.listeners[event].forEach(callback => callback(...arg));
+                    // this.listeners[event].forEach(callback => callback(...arg));
+                    this.listeners[event](...arg);
                 },
                 bindEvent: function(element, eventType, eventName) {
                     element.addEventListener(eventType, (e) => {
@@ -217,47 +219,6 @@
                 isRandom: false,
                 historyIndex: [],
                 unplayedSongs: [],
-                defineProperties: function() {
-                    Object.defineProperty(this, "currentSong", {
-                        get: function() {
-                            return songs[Player.currentIndex];
-                        }
-                    })
-                },
-                prevSong: function () {
-                    if (Player.historyIndex.length > 0) {
-                        Player.currentIndex = Player.historyIndex.pop();
-                    } else {
-                        alert("No more songs in history");
-                    }
-                    EventsHub.execute("loadCurrentSong");
-                },
-                loadCurrentSong: function() {
-                    heading.innerText = this.currentSong.name;
-                    cdThumb.style.backgroundImage = `url("${this.currentSong.image}")`;
-                    audio.src = this.currentSong.path;
-                },
-                nextSong: function () {
-                    Player.currentIndex++;
-                    if (Player.currentIndex > songs.length - 1) {
-                        Player.currentIndex = 0;
-                    }
-                    EventsHub.execute("loadCurrentSong");
-                },
-                randomSong: function () {
-                    if (Player.unplayedSongs.length == 0) {
-                        // Player.handleHistoryAndUnplayed("init");
-                        EventsHub.execute("handleHistoryAndUnplayed", "init");
-                    }
-                    const randomIndexUnplayed = Math.floor(
-                         Math.random() * Player.unplayedSongs.length
-                       );
-                    const newIndex = Player.unplayedSongs[randomIndexUnplayed];
-                    Player.currentIndex = newIndex;
-                    EventsHub.execute("loadCurrentSong");
-                    EventsHub.execute("handleHistoryAndUnplayed", "update");
-                    // Player.handleHistoryAndUnplayed("update");
-                },
                 registerEvents: function() {
                     const cdWidth = cd.offsetWidth;
                     const cdThumbAnimate = cdThumb.animate(
@@ -269,7 +230,7 @@
                     );
                     cdThumbAnimate.pause();
                 
-                    const playerEvents = {
+                    const methods = {
                         playButtonClick: () => { Player.isPlaying ? audio.pause() : EventsHub.execute("startPlayingAudio"); },
                         audioPlay: () => { Player.isPlaying = true; player.classList.add("playing"); cdThumbAnimate.play(); },
                         audioPause: () => { Player.isPlaying = false; player.classList.remove("playing"); cdThumbAnimate.pause(); },
@@ -292,10 +253,8 @@
                             randomButton.classList.toggle("active");
                         },
                         nextButtonClick: () => {
-                            // Player.handleHistoryAndUnplayed("save");
                             EventsHub.execute("handleHistoryAndUnplayed", "save");
-                            Player.isRandom ? Player.randomSong() : Player.nextSong();
-                            // audio.play();
+                            Player.isRandom ? EventsHub.execute("randomSong") : EventsHub.execute("nextSong");
                             EventsHub.execute("startPlayingAudio");
                             EventsHub.execute("playlistRender");
                         },
@@ -303,9 +262,8 @@
                             if (audio.currentTime > 5) {
                                 EventsHub.execute("loadCurrentSong");
                             } else {
-                                Player.prevSong();
+                                EventsHub.execute("prevSong");
                             }
-                            // audio.play();
                             EventsHub.execute("startPlayingAudio");
                             EventsHub.execute("playlistRender");
                         },
@@ -326,15 +284,51 @@
                                 );
                             }
                         },
+                        defineProperties: function() {
+                            Object.defineProperty(Player, "currentSong", {
+                                get: function() {
+                                    return songs[Player.currentIndex];
+                                }
+                            })
+                        },
+                        prevSong: function () {
+                            if (Player.historyIndex.length > 0) {
+                                Player.currentIndex = Player.historyIndex.pop();
+                            } else {
+                                alert("No more songs in history");
+                            }
+                            EventsHub.execute("loadCurrentSong");
+                        },
+                        nextSong: function () {
+                            Player.currentIndex++;
+                            if (Player.currentIndex > songs.length - 1) {
+                                Player.currentIndex = 0;
+                            }
+                            EventsHub.execute("loadCurrentSong");
+                        },
+                        randomSong: function () {
+                            if (Player.unplayedSongs.length == 0) {
+                                EventsHub.execute("handleHistoryAndUnplayed", "init");
+                            }
+                            const randomIndexUnplayed = Math.floor(
+                                Math.random() * Player.unplayedSongs.length
+                            );
+                            const newIndex = Player.unplayedSongs[randomIndexUnplayed];
+                            Player.currentIndex = newIndex;
+                            EventsHub.execute("loadCurrentSong");
+                            EventsHub.execute("handleHistoryAndUnplayed", "update");
+                        },
                         loadCurrentSong: () => {
-                            Player.loadCurrentSong();
+                            heading.innerText = Player.currentSong.name;
+                            cdThumb.style.backgroundImage = `url("${Player.currentSong.image}")`;
+                            audio.src = Player.currentSong.path;
                         },
                         startPlayingAudio: () => {
                             audio.play();
                         },
                     };
-                    Object.keys(playerEvents).forEach((event) => {
-                        EventsHub.register(event, playerEvents[event]);
+                    Object.keys(methods).forEach((method) => {
+                        EventsHub.register(method, methods[method]);
                     });
                 },
                 EventsHandler: function() {
@@ -356,66 +350,67 @@
                     EventsHub.bindEvent(progress, "input", "progressInput");
                 },
                 start: function() {
-                    this.defineProperties();
-                    this.loadCurrentSong();
                     this.registerEvents();
                     this.EventsHandler();
+                    EventsHub.execute("defineProperties");
+                    EventsHub.execute("loadCurrentSong");
                 }
             }
 
             const Playlist = {
-                render: function() {
-                    const htmls = songs.map((song, index) => {
-                        return `
-                            <div class="song ${
-                                index == Player.currentIndex ? "active" : ""
-                            }" data-index="${index}">
-                                <div class="thumb"
-                                    style="
-                                        background-image: url('${song.image}');
-                                    "
-                                ></div>
-                                <div class="body">
-                                    <h3 class="title">${song.name}</h3>
-                                    <p class="author">${song.singer}</p>
-                                </div>
-                                <div class="option">
-                                    <i class="fas fa-ellipsis-h"></i>
-                                </div>
-                            </div>
-                        `;
-                    });
-                    playlist.innerHTML = htmls.join("");
-                },
                 registerEvents: function() {
-                    EventsHub.register("playlistClick", (e) => {
-                        // Player.handleHistoryAndUnplayed("save");
-                        EventsHub.execute("handleHistoryAndUnplayed", "save");
-                        const song = e.target.closest(".song:not(.active)");
-                        const option = e.target.closest(".option");
+                    const methods = {
+                        playlistClick: (e) => {
+                            EventsHub.execute("handleHistoryAndUnplayed", "save");
+                            const song = e.target.closest(".song:not(.active)");
+                            const option = e.target.closest(".option");
 
-                        if (option) {
-                            console.log("option");
-                        } else {
-                            if (song) {
-                                Player.currentIndex = song.dataset.index;
-                                EventsHub.execute("loadCurrentSong");
-                                EventsHub.execute("playlistRender");
-                                EventsHub.execute("startPlayingAudio");
+                            if (option) {
+                                console.log("option");
+                            } else {
+                                if (song) {
+                                    Player.currentIndex = song.dataset.index;
+                                    EventsHub.execute("loadCurrentSong");
+                                    EventsHub.execute("playlistRender");
+                                    EventsHub.execute("startPlayingAudio");
+                                }
                             }
-                        }
-                    }),
-                    EventsHub.register("playlistRender", () => {
-                        Playlist.render();
-                    })
+                        },
+                        playlistRender: () => {
+                            const htmls = songs.map((song, index) => {
+                                return `
+                                    <div class="song ${
+                                        index == Player.currentIndex ? "active" : ""
+                                    }" data-index="${index}">
+                                        <div class="thumb"
+                                            style="
+                                                background-image: url('${song.image}');
+                                            "
+                                        ></div>
+                                        <div class="body">
+                                            <h3 class="title">${song.name}</h3>
+                                            <p class="author">${song.singer}</p>
+                                        </div>
+                                        <div class="option">
+                                            <i class="fas fa-ellipsis-h"></i>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                            playlist.innerHTML = htmls.join("");
+                        },
+                    }
+                    Object.keys(methods).forEach((method) => {
+                        EventsHub.register(method, methods[method]);
+                    });
                 },
                 EventsHandler: function() {
                     EventsHub.bindEvent(playlist, "click", "playlistClick");
                 },
                 start: function () {
-                    this.render();
                     this.registerEvents();
                     this.EventsHandler();
+                    EventsHub.execute("playlistRender");
                 }
             }
 
