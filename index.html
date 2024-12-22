@@ -414,11 +414,10 @@
                 }
             }
 
-            EventsHub.register("DOMContentLoaded", () => {
+            document.addEventListener("DOMContentLoaded", () => {
                 Player.start();
                 Playlist.start();
-            });
-            EventsHub.bindEvent(document, "DOMContentLoaded", "DOMContentLoaded")
+            })
 
         </script>
     </body>
