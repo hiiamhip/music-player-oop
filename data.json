@@ -1,0 +1,56 @@
+[
+    {
+        "name": "Hymn For The Weekend",
+        "singer": "Cale, Haluna",
+        "path": "./assets/music/song1.mp3",
+        "image": "./assets/img/song1.jpg"
+    },
+    {
+        "name": "7 Years",
+        "singer": "Travis Atreo",
+        "path": "./assets/music/song2.mp3",
+        "image": "./assets/img/song2.jpg"
+    },
+    {
+        "name": "New Devide",
+        "singer": "Linkin Park",
+        "path": "./assets/music/song3.mp3",
+        "image": "./assets/img/song3.jpg"
+    },
+    {
+        "name": "Way Back",
+        "singer": "Vicetone",
+        "path": "./assets/music/song4.mp3",
+        "image": "./assets/img/song4.jpg"
+    },
+    {
+        "name": "Dynasty",
+        "singer": "Miia",
+        "path": "./assets/music/song5.mp3",
+        "image": "./assets/img/song5.jpg"
+    },
+    {
+        "name": "GODS",
+        "singer": "New Jeans",
+        "path": "./assets/music/song6.mp3",
+        "image": "./assets/img/song6.jpg"
+    },
+    {
+        "name": "Someone You Loved",
+        "singer": "Travis Atreo",
+        "path": "./assets/music/song7.mp3",
+        "image": "./assets/img/song7.jpg"
+    },
+    {
+        "name": "Mood",
+        "singer": "Sympton X Collective",
+        "path": "./assets/music/song8.mp3",
+        "image": "./assets/img/song8.jpg"
+    },
+    {
+        "name": "Fairy Tail (Remix)",
+        "singer": "Dxh Music Group",
+        "path": "./assets/music/song9.mp3",
+        "image": "./assets/img/song9.jpg"
+    }
+]
